@@ -1,0 +1,747 @@
+{
+  "name": "CUMPLEAÑOS",
+  "nodes": [
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {
+              "triggerAtHour": "={{ 9 }}"
+            }
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        496,
+        -16
+      ],
+      "id": "f931242a-8fc7-4ad9-af48-3d561a7ceebb",
+      "name": "disparador"
+    },
+    {
+      "parameters": {
+        "operation": "formatDate",
+        "date": "={{ $json.timestamp }}",
+        "format": "MM-dd-yyyy",
+        "outputFieldName": "fecha_hoy",
+        "options": {
+          "includeInputFields": false,
+          "timezone": true
+        }
+      },
+      "type": "n8n-nodes-base.dateTime",
+      "typeVersion": 2,
+      "position": [
+        672,
+        -16
+      ],
+      "id": "298442fb-a249-4ac6-82c0-0eebd5ea6471",
+      "name": "Date & Time"
+    },
+    {
+      "parameters": {
+        "documentId": {
+          "__rl": true,
+          "value": "1n1Gem06D4PxDyZWmca5SOSpxEzQw3bPFTT9mvZRQbzE",
+          "mode": "list",
+          "cachedResultName": "Feliz Cumpleaños",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n1Gem06D4PxDyZWmca5SOSpxEzQw3bPFTT9mvZRQbzE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "Hoja 1",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n1Gem06D4PxDyZWmca5SOSpxEzQw3bPFTT9mvZRQbzE/edit#gid=0"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        912,
+        -16
+      ],
+      "id": "c2ff814b-6325-4b4c-9db7-eacfe7deb957",
+      "name": "Get row(s) in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "G8wGF9cvOnG1jn6s",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "loose",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "854607dc-2b29-4a61-b52d-95a7bcedc1e2",
+              "leftValue": "={{ $json.row_number }}",
+              "rightValue": "",
+              "operator": {
+                "type": "number",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "7c16ee35-314a-4245-aeec-554c87cbc070",
+              "leftValue": "={{ $json.Nombre }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "2c3fc4b3-b3b5-4970-b6fe-6f18e8c980f3",
+              "leftValue": "={{ $json.email }}",
+              "rightValue": "",
+              "operator": {
+                "type": "string",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "7f79418d-fa52-442c-84fe-d343a1f00fe9",
+              "leftValue": "={{ $json['fecha_nacimiento (MM-DD)'] }}",
+              "rightValue": "",
+              "operator": {
+                "type": "dateTime",
+                "operation": "notEmpty",
+                "singleValue": true
+              }
+            },
+            {
+              "id": "6f7b6f6f-91d0-44a4-9936-502fd0f63714",
+              "leftValue": "={{ $json['fecha_nacimiento (MM-DD)'] }}",
+              "rightValue": "={{ $('Date & Time').item.json.fecha_hoy.substring(0,5) }}",
+              "operator": {
+                "type": "string",
+                "operation": "equals"
+              }
+            },
+            {
+              "id": "4e7e2659-8e4c-440c-bafc-0bee0dc5d88d",
+              "leftValue": "={{ $json.enviado }}",
+              "rightValue": "ENVIADO",
+              "operator": {
+                "type": "string",
+                "operation": "notContains"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "looseTypeValidation": true,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        1056,
+        -16
+      ],
+      "id": "d3063756-915a-4079-a3f5-9684eaf0a372",
+      "name": "Filter"
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.row_number }}{{ $json.email }}{{ $json.Nombre }}{{ $('Date & Time').item.json.fecha_hoy }}{{ $json.Idioma }}",
+        "hasOutputParser": true,
+        "options": {
+          "systemMessage": "=Eres un asistente de automatización altamente eficiente y un orquestador de tareas.\nTu principal y única herramienta de acción es el **MCP Client Tool**, que te permite acceder a todas las funcionalidades necesarias.\n**Tu objetivo es simple:**\n1. Por cada línea de input necesito que generes un mensaje de cumpleaños amigable y personalizado para un compañero de trabajo y no insinuar nada sobre la calidad de su trabajo.   El mensaje tiene que tener entre 3 y 4 líneas y no debe repetirse en las últimas 10 ejecuciones. Posteriormente enviaremos por email la propuesta de mensaje. Solo el mensaje que te pido enviar, ningún agregado de información de tareas realizadas. Decidas que hacer en base a tu análisis de datos sin consultarme.\n   \n {{ $json.Idioma }}"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2.2,
+      "position": [
+        1440,
+        -64
+      ],
+      "id": "f39fc221-679f-40a8-9996-4177de4e6479",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenRouter",
+      "typeVersion": 1,
+      "position": [
+        1136,
+        144
+      ],
+      "id": "b09d379b-c135-4514-a9a1-745fffaa460a",
+      "name": "OpenRouter Chat Model",
+      "credentials": {
+        "openRouterApi": {
+          "id": "kEgJjwLkK9cw5881",
+          "name": "OpenRouter account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sessionIdType": "customKey",
+        "sessionKey": "={{ $workflow.id }}"
+      },
+      "type": "@n8n/n8n-nodes-langchain.memoryBufferWindow",
+      "typeVersion": 1.3,
+      "position": [
+        1360,
+        144
+      ],
+      "id": "ffa4d366-417d-4045-b2e8-ec0b4127bd01",
+      "name": "Simple Memory"
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "documentId": {
+          "__rl": true,
+          "value": "1n1Gem06D4PxDyZWmca5SOSpxEzQw3bPFTT9mvZRQbzE",
+          "mode": "list",
+          "cachedResultName": "Feliz Cumpleaños",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n1Gem06D4PxDyZWmca5SOSpxEzQw3bPFTT9mvZRQbzE/edit?usp=drivesdk"
+        },
+        "sheetName": {
+          "__rl": true,
+          "value": "gid=0",
+          "mode": "list",
+          "cachedResultName": "cumples",
+          "cachedResultUrl": "https://docs.google.com/spreadsheets/d/1n1Gem06D4PxDyZWmca5SOSpxEzQw3bPFTT9mvZRQbzE/edit#gid=0"
+        },
+        "columns": {
+          "mappingMode": "defineBelow",
+          "value": {
+            "row_number": "={{ $('Get row(s) in sheet').item.json.row_number }}",
+            "enviado": "ENVIADO"
+          },
+          "matchingColumns": [
+            "row_number"
+          ],
+          "schema": [
+            {
+              "id": "Nombre",
+              "displayName": "Nombre",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "email",
+              "displayName": "email",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "telegram",
+              "displayName": "telegram",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "fecha_nacimiento (MM-DD)",
+              "displayName": "fecha_nacimiento (MM-DD)",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "mensaje ",
+              "displayName": "mensaje ",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "enviado",
+              "displayName": "enviado",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "string",
+              "canBeUsedToMatch": true
+            },
+            {
+              "id": "row_number",
+              "displayName": "row_number",
+              "required": false,
+              "defaultMatch": false,
+              "display": true,
+              "type": "number",
+              "canBeUsedToMatch": true,
+              "readOnly": true,
+              "removed": false
+            }
+          ],
+          "attemptToConvertTypes": false,
+          "convertFieldsToString": false
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.googleSheets",
+      "typeVersion": 4.7,
+      "position": [
+        2512,
+        -160
+      ],
+      "id": "fbe16a84-5462-41ca-bc34-9d80d4e7786f",
+      "name": "Update row in sheet",
+      "credentials": {
+        "googleSheetsOAuth2Api": {
+          "id": "G8wGF9cvOnG1jn6s",
+          "name": "Google Sheets account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "sendTo": "={{ $('Filter').item.json.email }}",
+        "subject": "={{ $json.var_cumple }} {{ $('Filter').item.json.Nombre }}",
+        "message": "= <h2>{{ $json.var_hola }} {{ $('Filter').item.json.Nombre }} , ¡{{ $json.var_cumple }} !</h2> <p>{{ $('If').item.json.output }} </p> \n    <div style=\"text-align: center;\">\n        <img src={{ $json.var_imagen }} alt={{ $json.var_cumple }}style=\"max-width: 40%; height: auto;\">\n    </div>\n    <p style=\"margin-top: 40px;\">{{ $json.var_saludos }},<br>Andrea</p>\n",
+        "options": {
+          "appendAttribution": false,
+          "bccList": "maria.andrea.marcos.99@gmail.com"
+        }
+      },
+      "type": "n8n-nodes-base.gmail",
+      "typeVersion": 2.1,
+      "position": [
+        2144,
+        -224
+      ],
+      "id": "43916e35-2098-4a62-bf45-9b315e74af99",
+      "name": "Send a message",
+      "webhookId": "471997cb-6767-45e6-a15f-5dd4e958010f",
+      "credentials": {
+        "gmailOAuth2": {
+          "id": "jEkXjIioscCATu7E",
+          "name": "Gmail account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "chatId": "8391101452",
+        "text": "=Recordatorio Cumpleaños de:  {{ $('Filter').item.json.Nombre }}",
+        "additionalFields": {
+          "appendAttribution": false
+        }
+      },
+      "type": "n8n-nodes-base.telegram",
+      "typeVersion": 1.2,
+      "position": [
+        2144,
+        -64
+      ],
+      "id": "9d975d31-d932-4243-843b-e24a8681e3db",
+      "name": "Send a text message",
+      "webhookId": "54d7831d-dcfc-46ea-83a3-f2834870a078",
+      "credentials": {
+        "telegramApi": {
+          "id": "ciZJYJLzvdCB5sny",
+          "name": "Telegram account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "calendar": {
+          "__rl": true,
+          "value": "78a2f26a613fe4a0b1557d7637229bb24d0d7f6c973a5b2608aaa3401d22d443@group.calendar.google.com",
+          "mode": "list",
+          "cachedResultName": "CUMPLES"
+        },
+        "start": "={{ $('Date & Time').item.json.fecha_hoy }} 13:00:00",
+        "end": "={{ $('Date & Time').item.json.fecha_hoy }} 14:00:00",
+        "useDefaultReminders": "={{ true }}",
+        "additionalFields": {
+          "description": "=Revisar Almuerzo Cumple - {{ $('Get row(s) in sheet').item.json.Nombre }} ",
+          "summary": "=Revisar Almuerzo Cumple - {{ $('Get row(s) in sheet').item.json.Nombre }} "
+        }
+      },
+      "type": "n8n-nodes-base.googleCalendar",
+      "typeVersion": 1.3,
+      "position": [
+        2304,
+        96
+      ],
+      "id": "4f57c889-837c-401a-96a0-dc31444d609d",
+      "name": "Create an event",
+      "credentials": {
+        "googleCalendarOAuth2Api": {
+          "id": "GvwIJ07RRgswnDMg",
+          "name": "Google Calendar account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "2e5a1a16-d4cb-4e4f-8fc5-dcb9c7d71a09",
+              "leftValue": "={{ $('Filter').item.json.requiere_loquear_calendar }}",
+              "rightValue": "SI",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.filter",
+      "typeVersion": 2.2,
+      "position": [
+        2016,
+        96
+      ],
+      "id": "08f910a4-bb67-4a70-b554-772f78cf91fc",
+      "name": "Filter1"
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "23cd6e78-5274-41a1-afff-c6dcc96973e1",
+              "leftValue": "={{ $('Filter').item.json.Idioma }}",
+              "rightValue": "Inglés",
+              "operator": {
+                "type": "string",
+                "operation": "equals",
+                "name": "filter.operator.equals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1712,
+        -240
+      ],
+      "id": "f2712c90-2a56-4dce-b1c1-f8045e423dd5",
+      "name": "If"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1c790d6-feab-4b5d-bfd6-a216e8844207",
+              "name": "var_saludos",
+              "value": "Regards",
+              "type": "string"
+            },
+            {
+              "id": "bcf3aec9-845f-4ee6-89c0-54d6cfb06e81",
+              "name": "var_cumple",
+              "value": "Happy Birthday",
+              "type": "string"
+            },
+            {
+              "id": "d934cf8e-f183-4412-9dca-55b1d58dc4e9",
+              "name": "var_hola",
+              "value": "Hello",
+              "type": "string"
+            },
+            {
+              "id": "ec552a1b-e367-4ca3-bee6-2db78971e617",
+              "name": "var_imagen",
+              "value": "https://img.freepik.com/fotos-premium/tarjeta-cumpleanos-pastel-globos-ella_626747-5042.jpg",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1904,
+        -320
+      ],
+      "id": "1bc1f973-2000-47e9-87c3-f9ca7f21516a",
+      "name": "Ingles"
+    },
+    {
+      "parameters": {
+        "assignments": {
+          "assignments": [
+            {
+              "id": "e1c790d6-feab-4b5d-bfd6-a216e8844207",
+              "name": "var_saludos",
+              "value": "Saludos",
+              "type": "string"
+            },
+            {
+              "id": "bcf3aec9-845f-4ee6-89c0-54d6cfb06e81",
+              "name": "var_cumple",
+              "value": "Feliz Cumpleaños",
+              "type": "string"
+            },
+            {
+              "id": "d934cf8e-f183-4412-9dca-55b1d58dc4e9",
+              "name": "var_hola",
+              "value": "Hola",
+              "type": "string"
+            },
+            {
+              "id": "f46432bb-ca7f-47d3-ab4f-675fd971c0f6",
+              "name": "var_imagen",
+              "value": "https://wagonersabroad.com/wp-content/uploads/2012/12/Feliz_cumplea%C3%B1os.png",
+              "type": "string"
+            }
+          ]
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.set",
+      "typeVersion": 3.4,
+      "position": [
+        1904,
+        -160
+      ],
+      "id": "419b59db-c52c-49ce-b2ef-2584f8423673",
+      "name": "Español"
+    },
+    {
+      "parameters": {
+        "content": "Este workflow lee un Excel en Google Sheets que contiene nombres de empleados, dia de cumpleaños, idioma en el que hablan.\nLa idea es recorrer el file al inicio del dia (TRIGGER DISPARADOR) y hacer las siguientes Tareas:\n   - Recordarme en Telegram los empleados que cumplen años en el dia.\n   - Enviar un mail personalizado (se creó un IA AGENT con memoria para poder generar el MENSAJE PERSONALIZADO y se indico que no se repita según lo enviado en los últimos 10 mails). La idea es que los empleados sientan cercanía con el mensaje.\n   - Como la empresa es una multinacional, se enviarán los mensajes de mail (Asunto, titulo, saludos, imagen) segun el IDIOMA mapeado en el excel a la persona (cree para esto un IF y campos  EDIT_FILE para setear la salida).\n   -  Se creo un Nodo para crear un evento en mi GOOGLE CALENDAR con recordatorio para poder ver de almorzar con aquellas pesonas  mas CERCANAS (seteado en EXCEL campo 'requiere_loquear_calendar' = 'SI'\n    - Por último actualizo la planilla actualizando el campo 'ENVIADO' con ese valor, para corroborar que se envió el email.\n   \nMI MAIL:  MANDREAMARCOS@HOTMAIL.COM   \n",
+        "height": 288,
+        "width": 1008
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "typeVersion": 1,
+      "position": [
+        464,
+        -352
+      ],
+      "id": "ecfb7cc9-25eb-49e3-8065-223ffc11e792",
+      "name": "Sticky Note"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "disparador": {
+      "main": [
+        [
+          {
+            "node": "Date & Time",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Date & Time": {
+      "main": [
+        [
+          {
+            "node": "Get row(s) in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Get row(s) in sheet": {
+      "main": [
+        [
+          {
+            "node": "Filter",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenRouter Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Simple Memory": {
+      "ai_memory": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_memory",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Send a text message",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "Filter1",
+            "type": "main",
+            "index": 0
+          },
+          {
+            "node": "If",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a message": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Send a text message": {
+      "main": [
+        [
+          {
+            "node": "Update row in sheet",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Filter1": {
+      "main": [
+        [
+          {
+            "node": "Create an event",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "If": {
+      "main": [
+        [
+          {
+            "node": "Ingles",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Español",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Ingles": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Español": {
+      "main": [
+        [
+          {
+            "node": "Send a message",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "timezone": "America/Argentina/Buenos_Aires",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "5623ecdb-f07e-464c-abe2-e42d6c5e99d1",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "91b209c7b9e638276235347844848116fa0afb999a633c2a60b3fc0a2e0b6d08"
+  },
+  "id": "fkCuBld5ypQhB6mj",
+  "tags": []
+}
